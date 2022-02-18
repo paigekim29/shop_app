@@ -1,57 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../screens/product_detail_screen.dart';
+import '../providers/product.dart';
 
 class ProductItem extends StatelessWidget {
-  final String id;
-  final String title;
-  final String imageUrl;
+  // final String id;
+  // final String title;
+  // final String imageUrl;
 
-  ProductItem(this.id, this.title, this.imageUrl);
+  // ProductItem(this.id, this.title, this.imageUrl);
 
   @override
   Widget build(BuildContext context) {
+    final product = Provider.of<Product>(context, listen: false);
+    // if provider changes, it re-renders the whole build method
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: GridTile(
-        child: Container(
-          // decoration: BoxDecoration(
-          //   border: Border.all(
-          //     width: 0.5,
-          //     color: Colors.black87,
-          //   ),
-          //   borderRadius: BorderRadius.circular(10),
-          //   boxShadow: [
-          //     BoxShadow(
-          //       color: Colors.grey.withOpacity(0.5),
-          //       spreadRadius: 5,
-          //       blurRadius: 7,
-          //       offset: Offset(0, 3), // changes position of shadow
-          //     ),
-          //   ],
-          // ),
+        child: GridTile(
           child: GestureDetector(
             onTap: () {
               Navigator.of(context).pushNamed(
                 ProductDetailScreen.routeName,
-                arguments: id,
+                arguments: product.id,
               );
             },
             child: Image.network(
-              imageUrl,
+              product.imageUrl,
               fit: BoxFit.cover,
             ),
           ),
         ),
         footer: GridTileBar(
           backgroundColor: Colors.black87,
-          leading: IconButton(
-            icon: Icon(Icons.favorite),
-            onPressed: () {},
-            color: Theme.of(context).colorScheme.secondary,
+          leading: Consumer<Product>(
+            builder: (ctx, product, child) => IconButton(
+              icon: Icon(
+                product.isFavorite ? Icons.favorite : Icons.favorite_border,
+              ),
+              onPressed: () {
+                product.toggleFavoriteStatus();
+              },
+              color: Theme.of(context).colorScheme.secondary,
+            ),
+            // child: Text('Never Changes!'),
+            // can choose which part not to rebuild
           ),
           title: Text(
-            title,
+            product.title,
             textAlign: TextAlign.center,
           ),
           trailing: IconButton(

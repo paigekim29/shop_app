@@ -15,7 +15,8 @@ class ProductDetailScreen extends StatelessWidget {
     final productId = ModalRoute.of(context).settings.arguments as String;
     final loadedProduct = Provider.of<Products>(
       context,
-      listen: false, // will not rebuild if notifyListeners is called
+      listen: false,
+      // will not rebuild if notifyListeners is called
       // just want to get data from global data storage but not interested in updates
     ).findById(productId);
 

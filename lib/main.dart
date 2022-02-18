@@ -3,32 +3,44 @@ import 'package:provider/provider.dart';
 
 import './screens/products_overview_screen.dart';
 import './screens/product_detail_screen.dart';
+import './screens/cart_screen.dart';
 import './providers/products.dart';
+import './providers/cart.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (ctx) => Products(), // builder for below ^4.0.0 version
-      // better to use create because you create a new object
-      // based on a class and notify provider for change
-      child: MaterialApp(
-        title: 'MyShop',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSwatch().copyWith(
-            primary: Colors.purple,
-            secondary: Colors.deepOrange,
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (ctx) => Products(),
           ),
-          fontFamily: 'Lato',
-        ),
-        home: ProductsOverviewScreen(),
-        routes: {
-          ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
-        },
-      ),
-    );
+          ChangeNotifierProvider(
+            create: (ctx) => Cart(),
+          ),
+        ],
+        child: ChangeNotifierProvider(
+          create: (ctx) => Products(), // builder for below ^4.0.0 version
+          // better to use create because you create a new object
+          // based on a class and notify provider for change
+          child: MaterialApp(
+            title: 'MyShop',
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSwatch().copyWith(
+                primary: Colors.purple,
+                secondary: Colors.deepOrange,
+              ),
+              fontFamily: 'Lato',
+            ),
+            home: ProductsOverviewScreen(),
+            routes: {
+              ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
+              CartScreen.routeName: (ctx) => CartScreen(),
+            },
+          ),
+        ));
   }
 }
 

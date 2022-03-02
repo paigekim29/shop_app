@@ -1,4 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+
+import '../models/http_exception.dart';
 
 class Product with ChangeNotifier {
   final String id;
@@ -17,8 +22,34 @@ class Product with ChangeNotifier {
     this.isFavorite = false,
   });
 
-  void toggleFavoriteStatus() {
-    isFavorite = !isFavorite;
+  void _setFavValue(bool newValue) {
+    isFavorite = newValue;
     notifyListeners(); // same as setState in stateful widget
+  }
+
+  void toggleFavoriteStatus() async {
+    final url = Uri.https(
+        'flutter-update-75a4a-default-rtdb.firebaseio.com', '/products/$id');
+    final oldStatus = isFavorite;
+    isFavorite = !isFavorite;
+    notifyListeners();
+
+    try {
+      final response = await http.patch(
+        url,
+        body: json.encode({
+          'isFavorite': isFavorite,
+        }),
+      );
+      if (response.statusCode >= 400) {
+        _setFavValue(oldStatus);
+        throw HttpException('Could not favorite/unfavorite product.');
+      }
+    } catch (error) {
+      // only throws own error with GET/POST request
+      print(error);
+      _setFavValue(oldStatus);
+      throw error;
+    }
   }
 }

@@ -8,9 +8,12 @@ import './screens/cart_screen.dart';
 import './screens/orders_screen.dart';
 import './screens/user_products_screen.dart';
 import './screens/edit_product_screen.dart';
+import './screens/auth_screen.dart';
+import './screens/splash_screen.dart';
 import './providers/products.dart';
 import './providers/cart.dart';
 import './providers/orders.dart';
+import './providers/auth.dart';
 
 void main() => runApp(MyApp());
 
@@ -18,40 +21,59 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-        providers: [
-          ChangeNotifierProvider(
-            create: (ctx) => Products(),
+      providers: [
+        ChangeNotifierProvider.value(
+          value: Auth(),
+        ),
+        ChangeNotifierProxyProvider<Auth, Products>(
+          // create: (ctx) => Products(),
+          update: (ctx, auth, previousProducts) => Products(
+            auth.token,
+            auth.userId,
+            previousProducts == null ? [] : previousProducts.items,
           ),
-          ChangeNotifierProvider(
-            create: (ctx) => Cart(),
+        ),
+        ChangeNotifierProvider.value(
+          value: Cart(),
+        ),
+        ChangeNotifierProxyProvider<Auth, Orders>(
+          update: (ctx, auth, previousOrders) => Orders(
+            auth.token,
+            auth.userId,
+            previousOrders == null ? [] : previousOrders.orders,
           ),
-          ChangeNotifierProvider(
-            create: (ctx) => Orders(),
-          ),
-        ],
-        child: ChangeNotifierProvider(
-          create: (ctx) => Products(), // builder for below ^4.0.0 version
-          // better to use create because you create a new object
-          // based on a class and notify provider for change
-          child: MaterialApp(
-            title: 'MyShop',
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSwatch().copyWith(
-                primary: Colors.purple,
-                secondary: Colors.deepOrange,
-              ),
-              fontFamily: 'Lato',
+        ),
+      ],
+      child: Consumer<Auth>(
+        builder: (ctx, auth, _) => MaterialApp(
+          title: 'MyShop',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSwatch().copyWith(
+              primary: Colors.purple,
+              secondary: Colors.deepOrange,
             ),
-            home: ProductsOverviewScreen(),
-            routes: {
-              ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
-              CartScreen.routeName: (ctx) => CartScreen(),
-              OrdersScreen.routeName: (ctx) => OrdersScreen(),
-              UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
-              EditProductScreen.routeName: (ctx) => EditProductScreen()
-            },
+            fontFamily: 'Lato',
           ),
-        ));
+          home: auth.isAuth
+              ? ProductsOverviewScreen()
+              : FutureBuilder(
+                  future: auth.tryAutoLogin(),
+                  builder: (ctx, authResultSnapshot) =>
+                      authResultSnapshot.connectionState ==
+                              ConnectionState.waiting
+                          ? SplashScreen()
+                          : AuthScreen(),
+                ),
+          routes: {
+            ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
+            CartScreen.routeName: (ctx) => CartScreen(),
+            OrdersScreen.routeName: (ctx) => OrdersScreen(),
+            UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
+            EditProductScreen.routeName: (ctx) => EditProductScreen()
+          },
+        ),
+      ),
+    );
   }
 }
 
@@ -64,3 +86,8 @@ class MyApp extends StatelessWidget {
 // ChangeNotifierProvider.value should be used where you have the provider
 // package and you're providing your data on a single list or grid items
 // where Flutter recycle the widgets that attached to provider
+
+// ChangeNotifierProvider(
+//  create: (ctx) => Products(), // builder for below ^4.0.0 version
+// better to use create because you create a new object
+// based on a class and notify provider for change

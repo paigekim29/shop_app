@@ -27,19 +27,20 @@ class Product with ChangeNotifier {
     notifyListeners(); // same as setState in stateful widget
   }
 
-  void toggleFavoriteStatus() async {
+  void toggleFavoriteStatus(String token, String userId) async {
     final url = Uri.https(
-        'flutter-update-75a4a-default-rtdb.firebaseio.com', '/products/$id');
+      'flutter-update-75a4a-default-rtdb.firebaseio.com',
+      '/userFavorites/$userId/$id.json',
+      {'auth': token},
+    );
     final oldStatus = isFavorite;
     isFavorite = !isFavorite;
     notifyListeners();
 
     try {
-      final response = await http.patch(
+      final response = await http.put(
         url,
-        body: json.encode({
-          'isFavorite': isFavorite,
-        }),
+        body: json.encode(isFavorite),
       );
       if (response.statusCode >= 400) {
         _setFavValue(oldStatus);

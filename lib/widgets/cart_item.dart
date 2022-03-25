@@ -9,7 +9,6 @@ class CartItem extends StatelessWidget {
   final double price;
   final int quantity;
   final String title;
-
   CartItem(this.id, this.productId, this.price, this.quantity, this.title);
 
   @override

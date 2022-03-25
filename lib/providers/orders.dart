@@ -65,7 +65,7 @@ class Orders extends ChangeNotifier {
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
     final url = Uri.https(
       'flutter-update-75a4a-default-rtdb.firebaseio.com',
-      '/orders.json',
+      '/orders/$userId.json',
       {'auth': authToken},
     );
     final timestamp = DateTime.now();
